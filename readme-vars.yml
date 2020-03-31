@@ -19,8 +19,8 @@ available_architectures:
 # development version
 development_versions: false
 development_versions_items:
-  - { tag: "latest", desc: "Stable Ombi releases" }
-  - { tag: "development", desc: "Releases from the `develop` branch of Ombi" }
+  - { tag: "latest", desc: "Stable releases" }
+  - { tag: "development", desc: "Releases from the `develop` branch" }
 
 
 # container parameters
@@ -34,7 +34,7 @@ param_env_vars:
   - { env_var: "TZ", env_value: "Europe/London", desc: "Specify a timezone to use EG Europe/London." }
   - { env_var: "URL", env_value: "yourdomain.url", desc: "Top url you have control over (`customdomain.com` if you own it, or `customsubdomain.ddnsprovider.com` if dynamic dns)." }
   - { env_var: "SUBDOMAINS", env_value: "www,", desc: "Subdomains you'd like the cert to cover (comma separated, no spaces) ie. `www,ftp,cloud`. For a wildcard cert, set this _exactly_ to `wildcard` (wildcard cert is available via `dns` and `duckdns` validation only)" }
-  - { env_var: "VALIDATION", env_value: "http", desc: "Letsencrypt validation method to use, options are `http`, `tls-sni`, `dns` or `duckdns` (`dns` method also requires `DNSPLUGIN` variable set) (`duckdns` method requires `DUCKDNSTOKEN` variable set, and the `SUBDOMAINS` variable must be either empty or set to `wildcard`)." }
+  - { env_var: "VALIDATION", env_value: "http", desc: "Letsencrypt validation method to use, options are `http`, `dns` or `duckdns` (`dns` method also requires `DNSPLUGIN` variable set) (`duckdns` method requires `DUCKDNSTOKEN` variable set, and the `SUBDOMAINS` variable must be either empty or set to `wildcard`)." }
 param_usage_include_vols: true
 param_volumes:
   - { vol_path: "/config", vol_host_path: "</path/to/appdata/config>", desc: "All the config files including the webroot reside here." }
@@ -51,7 +51,7 @@ cap_add_param_vars:
 # optional container parameters
 opt_param_usage_include_env: true
 opt_param_env_vars:
-  - { env_var: "DNSPLUGIN", env_value: "cloudflare", desc: "Required if `VALIDATION` is set to `dns`. Options are `cloudflare`, `cloudxns`, `digitalocean`, `dnsimple`, `dnsmadeeasy`, `gandi`, `google`, `inwx`, `linode`, `luadns`, `nsone`, `ovh`, `rfc2136`, `route53` and `transip`. Also need to enter the credentials into the corresponding ini (or json for some plugins) file under `/config/dns-conf`." }
+  - { env_var: "DNSPLUGIN", env_value: "cloudflare", desc: "Required if `VALIDATION` is set to `dns`. Options are `aliyun`, `cloudflare`, `cloudxns`, `cpanel`, `digitalocean`, `dnsimple`, `dnsmadeeasy`, `domeneshop`, `gandi`, `google`, `inwx`, `linode`, `luadns`, `nsone`, `ovh`, `rfc2136`, `route53` and `transip`. Also need to enter the credentials into the corresponding ini (or json for some plugins) file under `/config/dns-conf`." }
   - { env_var: "DUCKDNSTOKEN", env_value: "<token>", desc: "Required if `VALIDATION` is set to `duckdns`. Retrieve your token from https://www.duckdns.org" }
   - { env_var: "EMAIL", env_value: "<e-mail>", desc: "Optional e-mail address used for cert expiration notifications." }
   - { env_var: "DHLEVEL", env_value: "2048", desc: "Dhparams bit value (default=2048, can be set to `1024` or `4096`)." }
@@ -80,7 +80,6 @@ app_setup_block: |
   ### Validation and initial setup
   * Before running this container, make sure that the url and subdomains are properly forwarded to this container's host, and that port 443 (and/or 80) is not being used by another service on the host (NAS gui, another webserver, etc.).
   * For `http` validation, port 80 on the internet side of the router should be forwarded to this container's port 80
-  * For `tls-sni` validation, port 443 on the internet side of the router should be forwarded to this container's port 443
   * For `dns` validation, make sure to enter your credentials into the corresponding ini (or json for some plugins) file under `/config/dns-conf`
     * Cloudflare provides free accounts for managing dns and is very easy to use with this image. Make sure that it is set up for "dns only" instead of "dns + proxy"
     * Google dns plugin is meant to be used with "Google Cloud DNS", a paid enterprise product, and not for "Google Domains DNS"
@@ -126,6 +125,14 @@ app_setup_nginx_reverse_proxy_block: ""
 
 # changelog
 changelogs:
+  - { date: "11.03.20:", desc: "Add php7-sodium." }
+  - { date: "06.03.20:", desc: "Implement cert renewal attempt during container start (only if the cert is already expired or will expire within the next 24 hours, otherwise it will be attempted at 2:08am)." }
+  - { date: "05.03.20:", desc: "Use port and proto upstream variables for ldap and default sample confs." }
+  - { date: "24.02.20:", desc: "Remove world/group read permissions in dns-conf." }
+  - { date: "23.02.20:", desc: "Add aliyun dns validation plugin." }
+  - { date: "28.01.20:", desc: "Deprecate tls-sni validation method, remove from docs." }
+  - { date: "27.01.20:", desc: "Add support for cpanel dns validation." }
+  - { date: "10.01.20:", desc: "Add support for domeneshop dns validation." }
   - { date: "07.01.20:", desc: "Update ciphers from Mozilla ssl-config recommendations." }
   - { date: "01.01.20:", desc: "Add support for gandi dns validation." }
   - { date: "31.12.19:", desc: "GeoIP2 databases now require personal license keys to download. Auto download is disabled and log message is added." }

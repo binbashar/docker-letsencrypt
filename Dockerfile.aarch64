@@ -74,6 +74,7 @@ RUN \
 	php7-posix \
 	php7-soap \
 	php7-sockets \
+	php7-sodium \
 	php7-sqlite3 \
 	php7-tokenizer \
 	php7-xml \
@@ -93,11 +94,14 @@ RUN \
 	pip && \
  pip3 install -U \
 	${CERTBOT} \
+	certbot-dns-aliyun \
 	certbot-dns-cloudflare \
 	certbot-dns-cloudxns \
+	certbot-dns-cpanel \
 	certbot-dns-digitalocean \
 	certbot-dns-dnsimple \
 	certbot-dns-dnsmadeeasy \
+	certbot-dns-domeneshop \
 	certbot-dns-google \
 	certbot-dns-inwx \
 	certbot-dns-linode \
