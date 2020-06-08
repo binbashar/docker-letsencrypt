@@ -37,7 +37,7 @@ param_env_vars:
   - { env_var: "VALIDATION", env_value: "http", desc: "Letsencrypt validation method to use, options are `http`, `dns` or `duckdns` (`dns` method also requires `DNSPLUGIN` variable set) (`duckdns` method requires `DUCKDNSTOKEN` variable set, and the `SUBDOMAINS` variable must be either empty or set to `wildcard`)." }
 param_usage_include_vols: true
 param_volumes:
-  - { vol_path: "/config", vol_host_path: "</path/to/appdata/config>", desc: "All the config files including the webroot reside here." }
+  - { vol_path: "/config", vol_host_path: "/path/to/appdata/config", desc: "All the config files including the webroot reside here." }
 param_usage_include_ports: true
 param_ports:
   - { external_port: "443", internal_port: "443", port_desc: "Https port" }
@@ -64,7 +64,7 @@ opt_param_volumes:
   - { vol_path: "/config", vol_host_path: "/path/to/appdata/config", desc: "Configuration files." }
 opt_param_usage_include_ports: true
 opt_param_ports:
-  - { external_port: "80", internal_port: "80", port_desc: "Http port (required for http validation only)" }
+  - { external_port: "80", internal_port: "80", port_desc: "Http port (required for http validation and http -> https redirect)" }
 opt_param_device_map: false
 opt_param_devices:
   - { device_path: "/dev/dri", device_host_path: "/dev/dri", desc: "For hardware transcoding" }
@@ -100,6 +100,7 @@ app_setup_block: |
   * If you wish to hide your site from search engine crawlers, you may find it useful to add this configuration line to your site config, within the server block, above the line where ssl.conf is included
   `add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";`
   This will *ask* Google et al not to index and list your site. Be careful with this, as you will eventually be de-listed if you leave this line in on a site you wish to be present on search engines
+  * If you wish to redirect http to https, you must expose port 80
   ### Using certs in other containers
   * This container includes auto-generated pfx and private-fullchain-bundle pem certs that are needed by other apps like Emby and Znc.
     * To use these certs in other containers, do either of the following:
@@ -126,6 +127,10 @@ app_setup_nginx_reverse_proxy_block: ""
 
 # changelog
 changelogs:
+  - { date: "01.06.20:", desc: "Rebasing to alpine 3.12, change ldap login address to `/ldaplogin` to avoid clashes (existing users need to manually update)." }
+  - { date: "31.05.20:", desc: "Tweak Authelia confs (existing users can delete `authelia-server.conf` and `authelia-location.conf`, and restart to update)." }
+  - { date: "23.05.20:", desc: "Add support for Authelia." }
+  - { date: "15.05.20:", desc: "Remove `php7-pecl-imagick` due to upstream issues. Add support for `Geoip2` auto db retrieval." }
   - { date: "10.05.20:", desc: "Added support for fail2ban deny statements." }
   - { date: "04.05.20:", desc: "Allow for optionally setting propagation time for dns plugins. Add repo version of `whois` to replace the built-in busybox version. Update `jail.local` to change default fail2ban ban action to more widely supported `iptables-allports`." }
   - { date: "13.04.20:", desc: "Update cloudflare.ini with token info." }

@@ -74,6 +74,10 @@ cp /config/fail2ban/jail.local /etc/fail2ban/jail.local
 	cp /defaults/ssl.conf /config/nginx/ssl.conf
 [[ ! -f /config/nginx/ldap.conf ]] && \
 	cp /defaults/ldap.conf /config/nginx/ldap.conf
+[[ ! -f /config/nginx/authelia-server.conf ]] && \
+	cp /defaults/authelia-server.conf /config/nginx/authelia-server.conf
+[[ ! -f /config/nginx/authelia-location.conf ]] && \
+	cp /defaults/authelia-location.conf /config/nginx/authelia-location.conf
 
 # check to make sure DNSPLUGIN is selected if dns validation is used
 [[ "$VALIDATION" = "dns" ]] && [[ ! "$DNSPLUGIN" =~ ^(aliyun|cloudflare|cloudxns|cpanel|digitalocean|dnsimple|dnsmadeeasy|domeneshop|gandi|google|inwx|linode|luadns|nsone|ovh|rfc2136|route53|transip)$ ]] && \
@@ -274,8 +278,17 @@ fi
 [[ ! -d /var/lib/libmaxminddb ]] && \
   ln -s /config/geoip2db /var/lib/libmaxminddb
 # check GeoIP2 database
-[[ ! -f /var/lib/libmaxminddb/GeoLite2-City.mmdb ]] && \
-  echo "Starting 2019/12/30, GeoIP2 databases require personal license key to download. Please manually download/update the GeoIP2 db and save as /config/geoip2db/GeoLite2-City.mmdb"
+if [ -n "$MAXMINDDB_LICENSE_KEY" ]; then
+  sed -i "s|.*MAXMINDDB_LICENSE_KEY.*|MAXMINDDB_LICENSE_KEY=\"${MAXMINDDB_LICENSE_KEY}\"|g" /etc/conf.d/libmaxminddb
+  if [ ! -f /var/lib/libmaxminddb/GeoLite2-City.mmdb ]; then
+    echo "Downloading GeoIP2 City database."
+    /etc/periodic/weekly/libmaxminddb
+  fi
+elif [ -f /var/lib/libmaxminddb/GeoLite2-City.mmdb ]; then
+  echo -e "Currently using the user provided GeoLite2-City.mmdb.\nIf you want to enable weekly auto-updates of the database, retrieve a free license key from MaxMind,\nand add a new env variable \"MAXMINDDB_LICENSE_KEY\", set to your license key."
+else
+  echo -e "Starting 2019/12/30, GeoIP2 databases require personal license key to download. Please retrieve a free license key from MaxMind,\nand add a new env variable \"MAXMINDDB_LICENSE_KEY\", set to your license key."
+fi
 
 # logfiles needed by fail2ban
 [[ ! -f /config/log/nginx/error.log ]] && \
